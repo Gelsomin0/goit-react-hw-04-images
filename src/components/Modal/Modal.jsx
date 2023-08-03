@@ -1,23 +1,22 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-export class Modal extends Component {
-    componentDidMount() {
-        this.props.handleModalEventListener();
-    }
-    render() {
-        return (
-            <div
-                onClick={this.props.closeModalByClick}
-                className={css.overlay}
-            >
-                <div className={css.modal}>
-                    <img className={css.image} src={this.props.imageURL} alt="" />
-                </div>
+export const Modal = ({ handleModalEventListener, closeModalByClick, imageURL }) => {
+    useEffect(() => {
+        handleModalEventListener();
+    }, [])
+    
+    return (
+        <div
+            onClick={closeModalByClick}
+            className={css.overlay}
+        >
+            <div className={css.modal}>
+                <img className={css.image} src={imageURL} alt="" />
             </div>
-        );    
-    };
+        </div>
+    );
 }
 
 Modal.propTypes = {
