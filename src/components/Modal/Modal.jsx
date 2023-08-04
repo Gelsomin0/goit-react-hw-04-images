@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 export const Modal = ({ handleModalEventListener, closeModalByClick, imageURL }) => {
     useEffect(() => {
         handleModalEventListener();
-    }, [])
+    });
     
     return (
         <div
