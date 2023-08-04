@@ -68,7 +68,7 @@ export const App = () => {
         setIsloadingMore(false);
       });
 
-
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, page]);
   
   const onLoadMore = () => {
