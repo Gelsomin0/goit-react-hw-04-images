@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import css from './App.module.css';
 import { getSearchData } from 'tools/getSearchData';
 import { Searchbar } from './Searchbar/Searchbar';
@@ -18,6 +18,9 @@ export const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [largeImageURL, setLargeImageURL] = useState('');
 
+  const isFirstRender = useRef(true);
+  const prevSearchData = useRef(searchData);
+
   const onSubmit = (newQuery) => {
     if (!newQuery) {
       Notiflix.Notify.failure('Please, enter some keyword');
@@ -30,54 +33,44 @@ export const App = () => {
     setCanLoadMore(false);
     setIsLoadedGallery(true);
   };
-
-  useEffect(() => {
-
-  }, [searchQuery, ])
   
+  useEffect(() => {
+    if (isFirstRender.current || searchQuery === '') {
+      isFirstRender.current = false;
+      return;
+    }
 
-  // componentDidUpdate(_, prevState) {
-  //   if (this.state.searchQuery === '') {
-  //     return;
-  //   };
+    setIsLoadedGallery(false);
+    getSearchData(searchQuery, page)
+      .then(res => res.json())
+      .then(({ hits, total }) => {
+        setIsLoadedGallery(true);
 
-  //   if (
-  //     prevState.searchQuery !== this.state.searchQuery
-  //     || prevState.page !== this.state.page
-  //   ) {
-  //     this.setState({ isLoadedGallery: false });
-  //     getSearchData(this.state.searchQuery, this.state.page)
-  //       .then(res => res.json())
-  //       .then(({ hits, total }) => {
-  //         if (!total) {
-  //           Notiflix.Notify.failure('This is no result by your keyword!');
-  //           this.setState({ isLoadedGallery: true });
-  //           return;
-  //         }
-  //         if (total > 0) this.setState({ canLoadMore: true });
-  //         if (hits.length !== 12) this.setState({ canLoadMore: false });
+        if (!total) {
+          Notiflix.Notify.failure('This is no result by your keyword!');
+          return;
+        }
+        if (total > 0) setCanLoadMore(true);
+        if (hits.length !== 12) {
+          setCanLoadMore(false);
+          Notiflix.Notify.info('We have no more images for you!');
+        }
 
-  //         if (this.state.searchData.length >= 12) {
-  //           this.setState((prevState) => {
-  //             return {
-  //               searchData: [...prevState.searchData, ...hits],
-  //               isLoadedGallery: true,
-  //             };
-  //           });
-  //         } else {
-  //           this.setState({
-  //             searchData: [...hits],
-  //             isLoadedGallery: true,
-  //           });
-  //           Notiflix.Notify.success(`We found ${total} images for you.`);
-  //         };
-  //         this.setState({ isloadingMore: false });
-  //         return;
-  //       });
-  //     return;
-  //   };
-  // };
+        if (searchData.length >= 12) {
+          setSearchData([...prevSearchData.current, ...hits]);
+          prevSearchData.current = [...searchData, ...hits];
+        } else {
+          setSearchData([...hits]);
+          Notiflix.Notify.success(`We found ${total} images for you.`);
+          prevSearchData.current = [...hits];
+        };
 
+        setIsloadingMore(false);
+      });
+
+
+  }, [searchQuery, page]);
+  
   const onLoadMore = () => {
     setIsloadingMore(true);
     setCanLoadMore(false);
